@@ -5,20 +5,23 @@ import com.opencsv.CSVReader;
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import javax.xml.parsers.*;
-import java.io.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 public class Main {
-
 
     public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 
@@ -45,11 +48,9 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
-    public static List<Employee> parseCSV(String[] mapping, String file) throws FileNotFoundException {
+    public static List<Employee> parseCSV(String[] mapping, String file) {
 
         List<Employee> stuff = null;
         try (CSVReader csvReader = new CSVReader(new FileReader(file))) {
@@ -68,7 +69,7 @@ public class Main {
         System.out.println(stuff);
         return stuff;
     }
-    
+
     public static String listToJson(List<Employee> listStuff) {
 
         GsonBuilder builder = new GsonBuilder();
@@ -80,11 +81,11 @@ public class Main {
 
     }
 
-    public static List<Employee> parseXML(String xmlFile1) throws ParserConfigurationException, IOException, SAXException {
+    public static List<Employee> parseXML(String xmlFileName) {
 
         List<Employee> stuff2 = null;
 
-        File xmlFile = new File(xmlFile1);
+        File xmlFile = new File(xmlFileName);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
         try {
@@ -92,7 +93,7 @@ public class Main {
             Document doc = builder.parse(xmlFile);
             doc.getDocumentElement().normalize();
             NodeList nodeList = doc.getElementsByTagName("employee");
-          stuff2 = new ArrayList<>();
+            stuff2 = new ArrayList<>();
             for (int i = 0; i < nodeList.getLength(); i++) {
                 stuff2.add(getEmployee(nodeList.item(i)));
             }
@@ -103,34 +104,29 @@ public class Main {
         } catch (Exception exc) {
             exc.printStackTrace();
         }
-return  stuff2;
+        return stuff2;
     }
 
     private static Employee getEmployee(Node node) {
-        Long id = null;
-        String firstName = null;
-        String lastName = null;
-        String country = null;
-        int age = 0;
 
-        Employee empl2 = new Employee();
+        Employee empl = new Employee();
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             Element element = (Element) node;
-            empl2.setIde(Long.parseLong(getTagValue("id", element)));
-            empl2.setFirstName(getTagValue("firstName", element));
-            empl2.setLastName(getTagValue("lastName", element));
-            empl2.setCountry(getTagValue("country", element));
-            empl2.setAge(Integer.parseInt(getTagValue("age", element)));
+            empl.setIde(Long.parseLong(getTagValue("id", element)));
+            empl.setFirstName(getTagValue("firstName", element));
+            empl.setLastName(getTagValue("lastName", element));
+            empl.setCountry(getTagValue("country", element));
+            empl.setAge(Integer.parseInt(getTagValue("age", element)));
         }
-
-        return empl2;
+        return empl;
     }
+
     private static String getTagValue(String tag, Element element) {
         NodeList nodeList = element.getElementsByTagName(tag).item(0).getChildNodes();
-        Node node = (Node) nodeList.item(0);
+        Node node = nodeList.item(0);
         return node.getNodeValue();
     }
-    }
+}
 
 
 
